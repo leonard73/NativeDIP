@@ -1,5 +1,7 @@
 #include "../../include/dipNativeInc.h"
+#ifdef NEON_OPTIMIZATION_USED
 #include <arm_neon.h>
+#endif
 static inline int minmax(int min, int v, int max)
 {
 	return (v<min)?min:((max<v)?max:v);
