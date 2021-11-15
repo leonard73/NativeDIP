@@ -41,8 +41,8 @@ void log_bmp_header_info()
 void read_bmp_file(const char * readBmpPath,BMP_DATA * loadBmpData)
 {
     FILE * fp =  fopen(readBmpPath,"rb");
-    fread(&global_bmp_data.bmpFile_type,sizeof(unsigned char),sizeof(unsigned short),fp);
-    fread(&global_bmp_data.bmp_header_struct,sizeof(unsigned char),sizeof(BMP_HEADER),fp);
+    int ret=fread(&global_bmp_data.bmpFile_type,sizeof(unsigned char),sizeof(unsigned short),fp);
+    ret=fread(&global_bmp_data.bmp_header_struct,sizeof(unsigned char),sizeof(BMP_HEADER),fp);
     uint32_t data_bytes  = global_bmp_data.bmp_header_struct.bmp_file_struct.bmpFile_size - BITMAP_HEADER_LENGTH;
     log_bmp_header_info();
     // init_bmp_data_mem(data_bytes,loadBmpData->pixel_raw_array);
@@ -53,7 +53,7 @@ void read_bmp_file(const char * readBmpPath,BMP_DATA * loadBmpData)
     //     unsigned char * load_addr = loadBmpData->pixel_raw_array + (pixel_height_nb-1-i)* pixel_bytes_width;
     //     fread(load_addr,sizeof(unsigned char),pixel_bytes_width,fp);
     // }
-    fread(loadBmpData->pixel_raw_array,sizeof(unsigned char),data_bytes,fp);
+    ret=fread(loadBmpData->pixel_raw_array,sizeof(unsigned char),data_bytes,fp);
     fclose(fp);
     loadBmpData->bmp_header_struct=global_bmp_data.bmp_header_struct;
     loadBmpData->bmpFile_type=global_bmp_data.bmpFile_type;

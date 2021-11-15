@@ -2,7 +2,8 @@
 #include <stdio.h>
 #include <sys/time.h>
 // #include <bmp.h>
-#include "../../include/driverInc.h"
+#include "driverInc.h"
+#include "dipNativeInc.h"
 uint32_t glFrameWidthSet;
 uint32_t glFrameHeightSet;
 uint32_t glFramePixelCount;

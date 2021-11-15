@@ -26,6 +26,7 @@ cc_flag_lib:=-lGL -lGLU -lglut
 cc_flag_isa_neon:= -mfpu=neon-vfpv4 -mfloat-abi=hard -O3
 cc_flag_isa_avx:=  -mavx  -O3
 cc_flag_isa_avx2:= -mavx2 -O3
+cc_flag_isa_avx512:= -mavx512f -O3
 #choose which platform your device use
 # cc_flag_isa:=${cc_flag_isa_avx}
 # cc_flag_isa:=${cc_flag_isa_avx2}
@@ -33,9 +34,20 @@ cc_flag_isa_avx2:= -mavx2 -O3
 #compile flag all
 cc_flag_all:=${cc_flag_lib} ${cc_flag_include} ${cc_flag_def} ${cc_flag_isa}
 #outExecutable
-exefile:=DipBenchmark
-build:
+exefile:=build/DipBenchmark
+build_prepare:
+		mkdir -p build
+build_nativeC:
+		make build_prepare
 		$(cc) -o $(exefile) $(ex_benchmark_src_all) $(cc_flag_all)
+build_armNeon:
+		$(cc) -o $(exefile) $(ex_benchmark_src_all) $(cc_flag_all) ${cc_flag_isa_neon}
+build_avx128:
+		$(cc) -o $(exefile) $(ex_benchmark_src_all) $(cc_flag_all) ${cc_flag_isa_avx}
+build_avx256:
+		$(cc) -o $(exefile) $(ex_benchmark_src_all) $(cc_flag_all) ${cc_flag_isa_avx2}
+build_avx512:
+		$(cc) -o $(exefile) $(ex_benchmark_src_all) $(cc_flag_all) ${cc_flag_isa_avx512}
 run_bmp_display:
 		./$(exefile) ${exe_parameters} 1
 run_uvc_display:
@@ -44,5 +56,5 @@ clean:
 		rm -rf $(exefile)
 all:
 		make clean
-		make build
+		make build_nativeC
 		make run_bmp_display
