@@ -1,8 +1,8 @@
-Introduction
+【INTRODUCTION】
 
 This is an open source project of Digital Image Processing Algorithm with Native C language , which could be built both on X86/X64 and ARM-LINUX platform.
 
-BUILDING
+【BUILDING】
 
 1.sh intall.sh => to install necessary libraries on linux os
 
@@ -18,7 +18,7 @@ BUILDING
 
  [2.5] sh build_armNeon.sh   =>  build projects on arm Neon         supported Linux OS with NEON   SIMD Optimizations
 
-RUNNING
+【RUNNING】
 
 3.choices to run the executable files
 
