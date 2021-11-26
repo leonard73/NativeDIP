@@ -38,7 +38,6 @@ exefile:=build/DipBenchmark
 build_prepare:
 		mkdir -p build
 build_nativeC:
-		make build_prepare
 		$(cc) -o $(exefile) $(ex_benchmark_src_all) $(cc_flag_all)
 build_armNeon:
 		$(cc) -o $(exefile) $(ex_benchmark_src_all) $(cc_flag_all) ${cc_flag_isa_neon}
