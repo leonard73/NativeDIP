@@ -103,3 +103,24 @@ void transStreamBGR2RGB(const uint8_t * bgr,uint8_t  * rgb, uint32_t pixel_w,uin
 		rgb[id + 2] = bgr[id + 0];
 	}
 }
+void transStreamBGR2RGB_GRAY(const uint8_t * bgr,uint8_t  * rgb, uint32_t pixel_w,uint32_t pixel_h)
+{
+    #define I32_WEIGHT_RED_LIGHT      (19595)
+    #define I32_WEIGHT_GREEN_LIGHT    (38469)
+    #define I32_WEIGHT_BLUE_LIGHT     (7472)
+    for(int i=0;i<pixel_h;i++)
+    {
+        for(int j=0;j<pixel_w;j++)
+        {
+            unsigned char gray = (unsigned char)((I32_WEIGHT_RED_LIGHT*(unsigned int)bgr[i*pixel_w*3+j*3+2]
+                                                +I32_WEIGHT_GREEN_LIGHT*(unsigned int)bgr[i*pixel_w*3+j*3+1]
+                                                +I32_WEIGHT_BLUE_LIGHT*(unsigned int)bgr[i*pixel_w*3+j*3+0])>>16);
+            rgb[i*pixel_w*3+j*3+0] = gray;
+            rgb[i*pixel_w*3+j*3+1] = gray;
+            rgb[i*pixel_w*3+j*3+2] = gray;
+        }
+    }
+    #undef I32_WEIGHT_RED_LIGHT
+    #undef I32_WEIGHT_GREEN_LIGHT
+    #undef I32_WEIGHT_BLUE_LIGHT
+}

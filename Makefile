@@ -48,7 +48,7 @@ build_avx256:
 build_avx512:
 		$(cc) -o $(exefile) $(ex_benchmark_src_all) $(cc_flag_all) ${cc_flag_isa_avx512}
 run_bmp_display:
-		./$(exefile) ${exe_parameters} 1 0
+		./$(exefile) ${exe_parameters} 1 1
 run_uvc_display:
 		./$(exefile) ${exe_parameters} 2 3
 clean:
