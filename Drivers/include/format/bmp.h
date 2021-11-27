@@ -1,5 +1,10 @@
 #ifndef __BMP_H__
 #define __BMP_H__
+#ifdef __DISABLE_LOG_DEBUG__
+#define LOG_BMP(X,...) (void)0
+#else
+#define LOG_BMP(X,...) printf("[Debug]: " #X " \n",__VA_ARGS__)
+#endif
 #define BITMAP_FILE_LABEL_LENGTH    (sizeof(unsigned short))
 #define BITMAP_FILE_HEADER_LENGTH   (sizeof(BMP_FILE))
 #define BITMAP_INFO_HEADER_LENGTH   (sizeof(BMP_INFO))

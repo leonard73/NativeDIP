@@ -11,6 +11,11 @@
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <linux/videodev2.h>
+#ifdef __DISABLE_LOG_DEBUG__
+#define LOG_UVC(X,...) (void)0
+#else
+#define LOG_UVC(X,...) printf("[Debug]: " #X " \n",__VA_ARGS__)
+#endif
 #define UVC_DEVICE_PATH "/dev/video0"
 typedef struct {
 	uint8_t *start;

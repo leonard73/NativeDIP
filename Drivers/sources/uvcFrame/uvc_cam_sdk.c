@@ -40,16 +40,16 @@ void camera_init(camera_t* p_camera,unsigned int v4l_format)
 	memset(&cap, 0, sizeof(cap));
 	if (ioctl(p_camera->fd, VIDIOC_QUERYCAP, &cap) >= 0)
 	{
-		printf("version:%d, cap:%d\n", cap.version, cap.capabilities);
+		LOG_UVC("version:%d, cap:%d\n", cap.version, cap.capabilities);
 		if (! (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE))
 		{
-			printf("[ERROR] camera_init: no campture\n");
+			LOG_UVC("[ERROR] camera_init: no campture\n%s","");
 			return ;
 		}
 		
 		if (! (cap.capabilities & V4L2_CAP_STREAMING))
 		{
-			printf("[ERROR] camera_init: no streaming\n");
+			LOG_UVC("[ERROR] camera_init: no streaming\n%s","");
 			return ;
 		}		
 	}
@@ -100,7 +100,7 @@ void camera_init(camera_t* p_camera,unsigned int v4l_format)
 		if (buffer.length > buf_max)
 			buf_max = buffer.length;
 		
-		printf("count:%ld, length:%d\n", i, buffer.length);
+		LOG_UVC("count:%ld, length:%d\n", i, buffer.length);
 		p_camera->buffers[i].length = buffer.length;
 		p_camera->buffers[i].start = mmap(NULL, buffer.length, PROT_READ | PROT_WRITE, MAP_SHARED, p_camera->fd, buffer.m.offset);
 		if (NULL == p_camera->buffers[i].start)
@@ -206,13 +206,13 @@ struct timeval timeout;
 int uvc_camera_sdk_init(const char * device_path,uint32_t pixel_width,uint32_t pixel_height,int format)
 {
 	// try to access device_path
-	printf("try to access device_path\n");
+	LOG_UVC("try to access device_path\n");
 	if (access(device_path, F_OK) != 0)
 	{
 		perror("[ERROR] can not find the usb camera device!");
 		return -1;
 	}
-	printf("access device_path successfully!\n");
+	LOG_UVC("access device_path successfully!\n%s","");
 	p_camera_global = camera_open(device_path, pixel_width, pixel_height);
 	if (NULL == p_camera_global)
 	{
@@ -226,20 +226,20 @@ int uvc_camera_sdk_init(const char * device_path,uint32_t pixel_width,uint32_t p
 		// case uvc_camera_sdk_stream_y8:camera_init(p_camera_global,V4L2_PIX_FMT_GREY);break;
 		default:camera_init(p_camera_global,V4L2_PIX_FMT_YUYV);break;
 	}
-	printf("uvc_camera_sdk_init successfully!\n");
+	LOG_UVC("uvc_camera_sdk_init successfully!\n%s","");
 	return 0;
 }
 void uvc_camera_sdk_stream_start(uint64_t timeout_microSeconds)
 {
    timeout.tv_sec  = timeout_microSeconds/1000000;
    timeout.tv_usec = timeout_microSeconds%1000000;
-   printf("try to capture 10 frames at beginning timeout.tv_sec=%ld, timeout.tv_usec=%ld\n",timeout.tv_sec,timeout.tv_usec);
+   LOG_UVC("try to capture 10 frames at beginning timeout.tv_sec=%ld, timeout.tv_usec=%ld\n",timeout.tv_sec,timeout.tv_usec);
    camera_start(p_camera_global);
    for(int i = 0; i < 10; ++i)
    {
 	camera_frame(p_camera_global, timeout);
    }
-   printf("capture 10 frames ok!\n");
+   LOG_UVC("capture 10 frames ok!\n%s","");
 }
 camera_t * uvc_camera_sdk_stream_captured_once()
 {

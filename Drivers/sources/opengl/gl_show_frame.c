@@ -14,6 +14,7 @@ float zoom_w_ratio =1;
 camera_t * captured_p;
 static int captured_id=0;
 uint8_t rgb_bmp_data[1024*1024*3];
+pipelineCTL global_pipeline_ctl;
 framePipLineFunc  global_framePipLineFuncPtr;
 /*********BMP********/
 // void load_bmp_data(BMP_DATA * bmp_d)
@@ -40,7 +41,7 @@ void update_zoom_ratio()
     record_width=width;
     record_height=height;
     #ifndef GL_DEBUG_ENABLE
-    printf("zoom_w_ratio = %f; zoom_h_ratio=%f;\n",zoom_w_ratio,zoom_h_ratio);
+    LOG_OPENGL("zoom_w_ratio = %f; zoom_h_ratio=%f;\n",zoom_w_ratio,zoom_h_ratio);
     #endif
 }
 void init_pixels()
@@ -77,6 +78,18 @@ void init_bmp(void)
     glPixelStorei(GL_UNPACK_ALIGNMENT,1);
     return;
 }
+void menu_log()
+{
+    LOG_MENU(" *************************************%s"," ");
+    LOG_MENU(" *************************************%s"," ");
+    LOG_MENU(" NativeDIP KeyBoard Control:          %s"," ");
+    LOG_MENU(" F1:    %s"                              ,"Original Frame");
+    LOG_MENU(" F2:    %s"                              ,"Gamma Correction");
+    LOG_MENU(" F3:    %s"                              ,"Histogram Ballance");
+    LOG_MENU(" *************************************%s"," ");
+    LOG_MENU(" *************************************%s"," ");
+
+}
 void display(void)
 {
     static int record_capture_id =0;
@@ -98,6 +111,7 @@ void display(void)
         frame_in.frameWidth=glFrameWidthSet;
         frame_in.frameHeight=glFrameHeightSet;
         frame_in.frameSize=glFramePixelCount*3;
+        frame_in.piplineCtl= global_pipeline_ctl;
         global_framePipLineFuncPtr(&frame_in,&frame_out);
         glDrawPixels(frame_out.pixelWidth,frame_out.pixelHeight,GL_RGB,GL_UNSIGNED_BYTE,frame_out.rgb_data_p);
     }
@@ -110,7 +124,7 @@ void display(void)
     long new_timestamp=1000000*(tpend.tv_sec)+ tpend.tv_usec;
     if(captured_id==1) {mean_latency_ms = timeuse_us;}
     mean_latency_ms = (mean_latency_ms + timeuse_us)>>1;
-    printf("idle run : %ld us; fps : %ld\n\n",mean_latency_ms,1000000/(new_timestamp-record_timestamp+1));
+    LOG_OPENGL("idle run : %ld us; fps : %ld\n\n",mean_latency_ms,1000000/(new_timestamp-record_timestamp+1));
     record_timestamp=new_timestamp;
     record_capture_id=captured_id;
 #endif
@@ -136,6 +150,7 @@ void display_bmp(void)
         frame_in.frameWidth=glFrameWidthSet;
         frame_in.frameHeight=glFrameHeightSet;
         frame_in.frameSize=glFramePixelCount*3;
+        frame_in.piplineCtl= global_pipeline_ctl;
         global_framePipLineFuncPtr(&frame_in,&frame_out);
         glDrawPixels(frame_out.pixelWidth,frame_out.pixelHeight,GL_RGB,GL_UNSIGNED_BYTE,frame_out.rgb_data_p);
     }
@@ -148,7 +163,7 @@ void display_bmp(void)
     long new_timestamp=1000000*(tpend.tv_sec)+ tpend.tv_usec;
     if(captured_id==1) {mean_latency_ms = timeuse_us;}
     mean_latency_ms = (mean_latency_ms + timeuse_us)>>1;
-    printf("idle run : %ld us; fps : %ld\n\n",mean_latency_ms,1000000/(new_timestamp-record_timestamp+1));
+    LOG_OPENGL("idle run : %ld us; fps : %ld\n\n",mean_latency_ms,1000000/(new_timestamp-record_timestamp+1));
     record_timestamp=new_timestamp;
     record_capture_id=captured_id;
 #endif
@@ -184,7 +199,7 @@ void idle(void)
 {
     captured_p=uvc_camera_sdk_stream_captured_once();
     captured_id++;
-	// printf("ID[%d]: W=%d; H=%d; buf_length=%d; mean_pixel=%d\n",captured_id++,captured_p->width,captured_p->height,captured_p->head.length,meanOfBuffer(captured_p->head.start,captured_p->head.length));
+	// LOG_OPENGL("ID[%d]: W=%d; H=%d; buf_length=%d; mean_pixel=%d\n",captured_id++,captured_p->width,captured_p->height,captured_p->head.length,meanOfBuffer(captured_p->head.start,captured_p->head.length));
     glutPostRedisplay();
     usleep(1000);
 }
@@ -198,6 +213,15 @@ void free_gl_buf()
     if(!pixel_array)
     {
         free(pixel_array);
+    }
+}
+void processSpecialKeys(int key, int x, int y) 
+{
+    switch(key) 
+    {
+        case GLUT_KEY_F1 :global_pipeline_ctl.step2_id=0; break;
+        case GLUT_KEY_F2 :global_pipeline_ctl.step2_id=4; break;
+        default:                                          break;
     }
 }
 int start_gl_show_frame(int argc, char *argv[],uint32_t pixelW,uint32_t pixelH,framePipLineFunc  piplineFuncP)
@@ -216,6 +240,8 @@ int start_gl_show_frame(int argc, char *argv[],uint32_t pixelW,uint32_t pixelH,f
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
     glutIdleFunc(&idle);
+    glutSpecialUpFunc(processSpecialKeys);
+    menu_log();
     glutMainLoop();
     free_gl_buf();
     return 0;
@@ -240,6 +266,8 @@ int start_gl_show_bmp(int argc, char *argv[], char * load_bmp_path,uint32_t pixe
     glutDisplayFunc(display_bmp);
     glutReshapeFunc(reshape_bmp);
     glutIdleFunc(&idle_bmp);
+    glutSpecialUpFunc(processSpecialKeys);
+    menu_log();
     glutMainLoop();
     // if(!rgb_bmp_data) free(rgb_bmp_data);
     // free_gl_buf();

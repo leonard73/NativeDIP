@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#define LOG_STR2(S1,S2)         (printf("%s %s\n",S1,S2))
-#define LOG_STR_INT(S1,S2)      (printf("%s %d\n",S1,S2))
+#define LOG_STR2(S1,S2)         (LOG_BMP("%s %s\n",S1,S2))
+#define LOG_STR_INT(S1,S2)      (LOG_BMP("%s %d\n",S1,S2))
 BMP_DATA global_bmp_data;
 unsigned char rawDataPtr[1024*1024*12];
 void init_bmp_data_mem(unsigned int raw_data_bytes,unsigned char *load_ptr)
