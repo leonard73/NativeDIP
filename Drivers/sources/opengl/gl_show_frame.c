@@ -14,21 +14,22 @@ float zoom_w_ratio =1;
 camera_t * captured_p;
 static int captured_id=0;
 uint8_t rgb_bmp_data[1024*1024*3];
+framePipLineFunc  global_framePipLineFuncPtr;
 /*********BMP********/
-void load_bmp_data(BMP_DATA * bmp_d)
-{
-    struct timeval tpstart,tpend;
-    static long timeuse_us=0,times=1;
-    // bitmap_file_header bmpFileHeader;
-    // bitmap_info_header bmpInfoHeader;
-    // readBMP("test.bmp",&bmpFileHeader,&bmpInfoHeader,testRGB888);
-    for(int i=0;i<302*452;i++)
-    {
-        pixel_array[i*3+0] = (GLubyte)rgb_bmp_data[i*3+2];
-        pixel_array[i*3+1] = (GLubyte)rgb_bmp_data[i*3+1];
-        pixel_array[i*3+2] = (GLubyte)rgb_bmp_data[i*3+0];
-    }
-}
+// void load_bmp_data(BMP_DATA * bmp_d)
+// {
+//     struct timeval tpstart,tpend;
+//     static long timeuse_us=0,times=1;
+//     // bitmap_file_header bmpFileHeader;
+//     // bitmap_info_header bmpInfoHeader;
+//     // readBMP("test.bmp",&bmpFileHeader,&bmpInfoHeader,testRGB888);
+//     for(int i=0;i<302*452;i++)
+//     {
+//         pixel_array[i*3+0] = (GLubyte)rgb_bmp_data[i*3+2];
+//         pixel_array[i*3+1] = (GLubyte)rgb_bmp_data[i*3+1];
+//         pixel_array[i*3+2] = (GLubyte)rgb_bmp_data[i*3+0];
+//     }
+// }
 /*********BMP********/
 GLint record_width;
 GLint record_height;
@@ -90,9 +91,16 @@ void display(void)
 #endif
     glClear(GL_COLOR_BUFFER_BIT);
     glRasterPos2f(0,0);
-    loadStreamYuyv2RGBA((uint8_t*)pixel_array,captured_p->head.start,glFrameWidthSet,glFrameHeightSet);
-    // loadStreamY82RGBA(captured_p->head.start,glFrameWidthSet,glFrameHeightSet);
-    glDrawPixels(glFrameWidthSet,glFrameHeightSet,GL_RGB,GL_UNSIGNED_BYTE,pixel_array);
+    {
+        frameRawData  frame_in;
+        glShowDataRGB frame_out;
+        frame_in.frameRawPtr = captured_p->head.start;
+        frame_in.frameWidth=glFrameWidthSet;
+        frame_in.frameHeight=glFrameHeightSet;
+        frame_in.frameSize=glFramePixelCount*3;
+        global_framePipLineFuncPtr(&frame_in,&frame_out);
+        glDrawPixels(frame_out.pixelWidth,frame_out.pixelHeight,GL_RGB,GL_UNSIGNED_BYTE,frame_out.rgb_data_p);
+    }
     update_zoom_ratio();
     glPixelZoom(zoom_w_ratio,zoom_h_ratio);
     glFlush();
@@ -121,7 +129,16 @@ void display_bmp(void)
 #endif
     glClear(GL_COLOR_BUFFER_BIT);
     glRasterPos2f(-1.0f,-1.0f);
-    glDrawPixels(glFrameWidthSet,glFrameHeightSet,GL_RGB,GL_UNSIGNED_BYTE,pixel_array);
+    {
+        frameRawData  frame_in;
+        glShowDataRGB frame_out;
+        frame_in.frameRawPtr = rgb_bmp_data;
+        frame_in.frameWidth=glFrameWidthSet;
+        frame_in.frameHeight=glFrameHeightSet;
+        frame_in.frameSize=glFramePixelCount*3;
+        global_framePipLineFuncPtr(&frame_in,&frame_out);
+        glDrawPixels(frame_out.pixelWidth,frame_out.pixelHeight,GL_RGB,GL_UNSIGNED_BYTE,frame_out.rgb_data_p);
+    }
     update_zoom_ratio();
     glPixelZoom(zoom_w_ratio,zoom_h_ratio);
     glFlush();
@@ -183,8 +200,9 @@ void free_gl_buf()
         free(pixel_array);
     }
 }
-int start_gl_show_frame(int argc, char *argv[],uint32_t pixelW,uint32_t pixelH)
+int start_gl_show_frame(int argc, char *argv[],uint32_t pixelW,uint32_t pixelH,framePipLineFunc  piplineFuncP)
 {
+    global_framePipLineFuncPtr = piplineFuncP;
     glFrameWidthSet = pixelW;
     glFrameHeightSet = pixelH;
     int ret=uvc_camera_sdk_init("/dev/video0",glFrameWidthSet,glFrameHeightSet,0);
@@ -203,8 +221,9 @@ int start_gl_show_frame(int argc, char *argv[],uint32_t pixelW,uint32_t pixelH)
     return 0;
 }    
 
-int start_gl_show_bmp(int argc, char *argv[], char * load_bmp_path,uint32_t pixelW,uint32_t pixelH)
+int start_gl_show_bmp(int argc, char *argv[], char * load_bmp_path,uint32_t pixelW,uint32_t pixelH,framePipLineFunc  piplineFuncP)
 {
+    global_framePipLineFuncPtr = piplineFuncP;
     BMP_DATA bmp_d;
     bmp_d.pixel_raw_array=rgb_bmp_data;
     read_bmp_file(load_bmp_path,&bmp_d);
@@ -217,7 +236,7 @@ int start_gl_show_bmp(int argc, char *argv[], char * load_bmp_path,uint32_t pixe
     glutInitWindowSize(glFrameWidthSet, glFrameHeightSet);
     glutCreateWindow("OpenGL BMP SHOW");
     init_bmp();
-    load_bmp_data(&bmp_d);
+    // load_bmp_data(&bmp_d);
     glutDisplayFunc(display_bmp);
     glutReshapeFunc(reshape_bmp);
     glutIdleFunc(&idle_bmp);

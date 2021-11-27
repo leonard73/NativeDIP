@@ -1,1 +1,0 @@
-make run_uvc_display

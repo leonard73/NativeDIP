@@ -21,7 +21,7 @@ cc_flag_include:=-I${libNativeDIP_PATH}/include \
 #libraries compile flag
 cc_flag_lib:=-lGL -lGLU -lglut
 #definiations compile flag
-# cc_flag_def:=-DDEBUG_LATENCY_ENABLE 
+cc_flag_def+=-DDEBUG_LATENCY_ENABLE 
 #simd  optimization compile  flag
 cc_flag_isa_neon:= -mfpu=neon-vfpv4 -mfloat-abi=hard -O3
 cc_flag_isa_avx:=  -mavx  -O3
@@ -48,9 +48,9 @@ build_avx256:
 build_avx512:
 		$(cc) -o $(exefile) $(ex_benchmark_src_all) $(cc_flag_all) ${cc_flag_isa_avx512}
 run_bmp_display:
-		./$(exefile) ${exe_parameters} 1
+		./$(exefile) ${exe_parameters} 1 0
 run_uvc_display:
-		./$(exefile) ${exe_parameters} 2
+		./$(exefile) ${exe_parameters} 2 3
 clean:
 		rm -rf $(exefile)
 all:
