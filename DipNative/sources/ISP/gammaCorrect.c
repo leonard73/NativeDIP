@@ -4,11 +4,11 @@
 #include <arm_neon.h>
 uint8x8x4_t vTable[TABLE_SIZE>>5];
 #endif
-void generateTable(unsigned char * table,unsigned int size)
+void generateTable(unsigned char * table,unsigned int size,float power_level_inv)
 {
     for(unsigned int i=0;i<size ;i++)
     {
-        table[i] = (uint8_t)round((pow(i/255.f, 1/2.2)*255.f));
+        table[i] = (uint8_t)round((pow(i/255.f, 1/power_level_inv)*255.f));
         // printf("table[%3d]=%3d\n",i,table[i]);
     }
 }

@@ -5,13 +5,10 @@
 #endif
 #define DATA_SPLASH_BMP_PATH "Data/splash.bmp"
 uint32_t algo_id  = 0, step_2_id=0;
-#define ALGO_ID_BMP_BGR2RGB                     (0x00000000)
-#define ALGO_ID_BMP_RGB_RGB2GRAY                (0x00000001)
-#define ALGO_ID_UVC_YUYV2RGB                    (0x00000002)
-#define ALGO_ID_UVC_YUYV2RGBGRAY                (0x00000003)
-#define ALGO_ID_RGB_GAMMA_CORRECT               (0x00000004)
 #define MAX_OUTPUT_DATA_SIZE                    (1024*1024*32)
 uint8_t OUTPUT_MEM[MAX_OUTPUT_DATA_SIZE];
+void uvc_frame_display(int argc, char *argv[]);
+void bmp_frame_display(int argc, char *argv[]);
 void frame_piplineFunc(frameRawData * frame_in,glShowDataRGB * frame_out); 
 void frame_pipline_step0_init(frameRawData * frame_in,glShowDataRGB * frame_out);
 void frame_pipline_step1_run_bgr2rgb(frameRawData * frame_in,glShowDataRGB * frame_out);
@@ -105,7 +102,7 @@ void frame_pipline_step1_run_yuyv_rgb_gray(frameRawData * frame_in,glShowDataRGB
 void frame_pipline_step2_run_gamma_correct(frameRawData * frame_in,glShowDataRGB * frame_out)
 {
     uint8_t table_gamma[256];
-    generateTable(table_gamma,256);
+    generateTable(table_gamma,256,frame_in->filterParam.gammaCorrectParameters.GammaCorrect_power_level_inv);
     GammaCorrection((uint8_t*)frame_out->rgb_data_p,(uint8_t*)frame_out->rgb_data_p,frame_out->dataSize,table_gamma);  
     frame_out->pixelHeight *= 2;
     frame_out->dataSize    = frame_out->pixelWidth*frame_out->pixelHeight*3;

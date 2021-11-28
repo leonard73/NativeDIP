@@ -16,24 +16,13 @@ static int captured_id=0;
 uint8_t rgb_bmp_data[1024*1024*3];
 pipelineCTL global_pipeline_ctl;
 framePipLineFunc  global_framePipLineFuncPtr;
-/*********BMP********/
-// void load_bmp_data(BMP_DATA * bmp_d)
-// {
-//     struct timeval tpstart,tpend;
-//     static long timeuse_us=0,times=1;
-//     // bitmap_file_header bmpFileHeader;
-//     // bitmap_info_header bmpInfoHeader;
-//     // readBMP("test.bmp",&bmpFileHeader,&bmpInfoHeader,testRGB888);
-//     for(int i=0;i<302*452;i++)
-//     {
-//         pixel_array[i*3+0] = (GLubyte)rgb_bmp_data[i*3+2];
-//         pixel_array[i*3+1] = (GLubyte)rgb_bmp_data[i*3+1];
-//         pixel_array[i*3+2] = (GLubyte)rgb_bmp_data[i*3+0];
-//     }
-// }
-/*********BMP********/
+filterParameter   global_frameFilterParam;
 GLint record_width;
 GLint record_height;
+void init_filter_parameters()
+{
+    global_frameFilterParam.gammaCorrectParameters.GammaCorrect_power_level_inv = 2.2;
+}
 void update_zoom_ratio()
 {
     zoom_w_ratio = (float)width/(float)glFrameWidthSet;
@@ -80,14 +69,16 @@ void init_bmp(void)
 }
 void menu_log()
 {
-    LOG_MENU(" *************************************%s"," ");
-    LOG_MENU(" *************************************%s"," ");
-    LOG_MENU(" NativeDIP KeyBoard Control:          %s"," ");
-    LOG_MENU(" F1:    %s"                              ,"Original Frame");
-    LOG_MENU(" F2:    %s"                              ,"Gamma Correction");
-    LOG_MENU(" F3:    %s"                              ,"Histogram Ballance");
-    LOG_MENU(" *************************************%s"," ");
-    LOG_MENU(" *************************************%s"," ");
+    LOG_MENU(" *************************************%s","*************************************");
+    LOG_MENU(" *************************************%s","*************************************");
+    LOG_MENU(" %sNativeDIP KeyBoard Control: %s"       ,"***********************","***********************");
+    LOG_MENU(" F1:    Original Frame                %s","                                    ");
+    LOG_MENU(" F2:    Gamma Correction              %s","                                    ");
+    LOG_MENU("        a|A: add gamma_level_inv      %s","                                    ");
+    LOG_MENU("        s|S: sub gamma_level_inv      %s","                                    ");
+    LOG_MENU(" F3:    Histogram Ballance            %s","                                    ");
+    LOG_MENU(" *************************************%s","*************************************");
+    LOG_MENU(" *************************************%s","*************************************");
 
 }
 void display(void)
@@ -112,6 +103,7 @@ void display(void)
         frame_in.frameHeight=glFrameHeightSet;
         frame_in.frameSize=glFramePixelCount*3;
         frame_in.piplineCtl= global_pipeline_ctl;
+        frame_in.filterParam=global_frameFilterParam;
         global_framePipLineFuncPtr(&frame_in,&frame_out);
         glDrawPixels(frame_out.pixelWidth,frame_out.pixelHeight,GL_RGB,GL_UNSIGNED_BYTE,frame_out.rgb_data_p);
     }
@@ -151,6 +143,7 @@ void display_bmp(void)
         frame_in.frameHeight=glFrameHeightSet;
         frame_in.frameSize=glFramePixelCount*3;
         frame_in.piplineCtl= global_pipeline_ctl;
+        frame_in.filterParam=global_frameFilterParam;
         global_framePipLineFuncPtr(&frame_in,&frame_out);
         glDrawPixels(frame_out.pixelWidth,frame_out.pixelHeight,GL_RGB,GL_UNSIGNED_BYTE,frame_out.rgb_data_p);
     }
@@ -224,6 +217,18 @@ void processSpecialKeys(int key, int x, int y)
         default:                                          break;
     }
 }
+
+void processNormalKeys(unsigned char key,int x,int y)
+{
+    switch(global_pipeline_ctl.step2_id)
+    {
+        case ALGO_ID_RGB_GAMMA_CORRECT: processNormalKeyCase_GammaCorrect(key,&(global_frameFilterParam.gammaCorrectParameters));break;
+        case ALGO_ID_RGB_MEDIAN_SMOOTH: break;
+        default:                        break;
+    }
+    
+}
+
 int start_gl_show_frame(int argc, char *argv[],uint32_t pixelW,uint32_t pixelH,framePipLineFunc  piplineFuncP)
 {
     global_framePipLineFuncPtr = piplineFuncP;
@@ -241,6 +246,8 @@ int start_gl_show_frame(int argc, char *argv[],uint32_t pixelW,uint32_t pixelH,f
     glutReshapeFunc(reshape);
     glutIdleFunc(&idle);
     glutSpecialUpFunc(processSpecialKeys);
+    glutKeyboardUpFunc(processNormalKeys);
+    init_filter_parameters();
     menu_log();
     glutMainLoop();
     free_gl_buf();
@@ -267,6 +274,8 @@ int start_gl_show_bmp(int argc, char *argv[], char * load_bmp_path,uint32_t pixe
     glutReshapeFunc(reshape_bmp);
     glutIdleFunc(&idle_bmp);
     glutSpecialUpFunc(processSpecialKeys);
+    glutKeyboardUpFunc(processNormalKeys);
+    init_filter_parameters();
     menu_log();
     glutMainLoop();
     // if(!rgb_bmp_data) free(rgb_bmp_data);
