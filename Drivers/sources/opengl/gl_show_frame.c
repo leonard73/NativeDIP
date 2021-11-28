@@ -22,6 +22,9 @@ GLint record_height;
 void init_filter_parameters()
 {
     global_frameFilterParam.gammaCorrectParameters.GammaCorrect_power_level_inv = 2.2;
+    global_frameFilterParam.gaussianSmoothParameters.GaussianSmooth_Padding_Mode=CONVOLUTION_PADDING_MODE_REPLICATE;
+    global_frameFilterParam.gaussianSmoothParameters.GaussianSmooth_Sigma=1.0;
+    global_frameFilterParam.gaussianSmoothParameters.GaussianSmooth_Kernel=5;
 }
 void update_zoom_ratio()
 {
@@ -71,12 +74,12 @@ void menu_log()
 {
     LOG_MENU(" *************************************%s","*************************************");
     LOG_MENU(" *************************************%s","*************************************");
-    LOG_MENU(" %sNativeDIP KeyBoard Control: %s"       ,"***********************","***********************");
-    LOG_MENU(" F1:    Original Frame                %s","                                    ");
-    LOG_MENU(" F2:    Gamma Correction              %s","                                    ");
-    LOG_MENU("        a|A: add gamma_level_inv      %s","                                    ");
-    LOG_MENU("        s|S: sub gamma_level_inv      %s","                                    ");
-    LOG_MENU(" F3:    Histogram Ballance            %s","                                    ");
+    LOG_MENU(" %s   NativeDIP KeyBoard Control:     %s","******************","****************");
+    LOG_MENU(" F1:    Original Frame                %s","                                     ");
+    LOG_MENU(" F2:    [ISP]Gamma Correction         %s","                                     ");
+    LOG_MENU("        a|A: add gamma_level_inv      %s","                                     ");
+    LOG_MENU("        s|S: sub gamma_level_inv      %s","                                     ");
+    LOG_MENU(" F3:    [ISP]Histogram Ballance       %s","                                     ");
     LOG_MENU(" *************************************%s","*************************************");
     LOG_MENU(" *************************************%s","*************************************");
 
@@ -212,12 +215,12 @@ void processSpecialKeys(int key, int x, int y)
 {
     switch(key) 
     {
-        case GLUT_KEY_F1 :global_pipeline_ctl.step2_id=0; break;
-        case GLUT_KEY_F2 :global_pipeline_ctl.step2_id=4; break;
-        default:                                          break;
+        case GLUT_KEY_F1 :global_pipeline_ctl.step2_id=0                          ; break;
+        case GLUT_KEY_F2 :global_pipeline_ctl.step2_id=ALGO_ID_RGB_GAMMA_CORRECT  ; break;
+        case GLUT_KEY_F3 :global_pipeline_ctl.step2_id=ALGO_ID_RGB_GAUSSIAN_SMOOTH; break;
+        default:                                                                    break;
     }
 }
-
 void processNormalKeys(unsigned char key,int x,int y)
 {
     switch(global_pipeline_ctl.step2_id)
@@ -278,8 +281,7 @@ int start_gl_show_bmp(int argc, char *argv[], char * load_bmp_path,uint32_t pixe
     init_filter_parameters();
     menu_log();
     glutMainLoop();
-    // if(!rgb_bmp_data) free(rgb_bmp_data);
-    // free_gl_buf();
+    if(!rgb_bmp_data) free(rgb_bmp_data);
     return 0;
 }
 

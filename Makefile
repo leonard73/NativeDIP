@@ -11,6 +11,7 @@ driver_src:=${libDrivers_PATH}/sources/opengl/*.c \
 			${libDrivers_PATH}/sources/format/*.c
 #dip native sources#
 dipNative_src:=${libNativeDIP_PATH}/sources/ISP/*.c
+dipNative_src+=${libNativeDIP_PATH}/sources/CONV/*.c
 #total sources#
 ex_benchmark_src_all:=${ex_benchmark_src} \
 					  ${driver_src} \
@@ -22,7 +23,8 @@ cc_flag_include:=-I${libNativeDIP_PATH}/include \
 cc_flag_lib:=-lGL -lGLU -lglut -lm
 #definiations compile flag
 cc_flag_def+=-DDEBUG_LATENCY_ENABLE
-cc_flag_def+=-D__DISABLE_LOG_DEBUG__
+cc_flag_def+=-D__DISABLE_LOG_DEBUG__ 
+# cc_flag_def+=-D__DISABLE_PIPELINE_LATENCY__
 #simd  optimization compile  flag
 cc_flag_isa_neon:= -mfpu=neon-vfpv4 -mfloat-abi=hard -O3
 cc_flag_isa_avx:=  -mavx  -O3
