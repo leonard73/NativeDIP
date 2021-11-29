@@ -32,7 +32,7 @@ typedef struct gammaCorrectParam_t
 typedef struct gaussianSmoothParam_t
 {
     uint32_t             GaussianSmooth_Kernel;
-    uint32_t             GaussianSmooth_Sigma;
+    float                GaussianSmooth_Sigma;
     uint32_t             GaussianSmooth_Padding_Mode;
 }gaussianSmoothParam;
 typedef struct medianSmoothParam_t

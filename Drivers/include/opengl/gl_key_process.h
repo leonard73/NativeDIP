@@ -6,4 +6,5 @@
 #define LOG_KEYBOARD_RESPONSE(X,...) fflush(stdout);printf("%s[Key Res]: " #X " \r","                                                    ",__VA_ARGS__)
 #endif
 void processNormalKeyCase_GammaCorrect(unsigned char key,gammaCorrectParam * gammaParam_p);
+void processNormalKeyCase_GaussSmooth(unsigned char key,gaussianSmoothParam * gaussParam_p);
 #endif  //__GL_KEY_PROCESS_H__

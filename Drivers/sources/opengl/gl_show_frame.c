@@ -23,7 +23,7 @@ void init_filter_parameters()
 {
     global_frameFilterParam.gammaCorrectParameters.GammaCorrect_power_level_inv = 2.2;
     global_frameFilterParam.gaussianSmoothParameters.GaussianSmooth_Padding_Mode=CONVOLUTION_PADDING_MODE_REPLICATE;
-    global_frameFilterParam.gaussianSmoothParameters.GaussianSmooth_Sigma=1.0;
+    global_frameFilterParam.gaussianSmoothParameters.GaussianSmooth_Sigma=1.3;
     global_frameFilterParam.gaussianSmoothParameters.GaussianSmooth_Kernel=5;
 }
 void update_zoom_ratio()
@@ -79,7 +79,11 @@ void menu_log()
     LOG_MENU(" F2:    [ISP]Gamma Correction         %s","                                     ");
     LOG_MENU("        a|A: add gamma_level_inv      %s","                                     ");
     LOG_MENU("        s|S: sub gamma_level_inv      %s","                                     ");
-    LOG_MENU(" F3:    [ISP]Histogram Ballance       %s","                                     ");
+    LOG_MENU(" F3:    [ISP]Gaussian Smooth          %s","                                     ");
+    LOG_MENU("        a|A: add kernel level step2   %s","                                     ");
+    LOG_MENU("        s|S: sub kernel level step2   %s","                                     ");
+    LOG_MENU("        q|Q: add gauss  sigma step.1  %s","                                     ");
+    LOG_MENU("        w|W: sub gauss  sigma step.1  %s","                                     ");
     LOG_MENU(" *************************************%s","*************************************");
     LOG_MENU(" *************************************%s","*************************************");
 
@@ -225,9 +229,9 @@ void processNormalKeys(unsigned char key,int x,int y)
 {
     switch(global_pipeline_ctl.step2_id)
     {
-        case ALGO_ID_RGB_GAMMA_CORRECT: processNormalKeyCase_GammaCorrect(key,&(global_frameFilterParam.gammaCorrectParameters));break;
-        case ALGO_ID_RGB_MEDIAN_SMOOTH: break;
-        default:                        break;
+        case ALGO_ID_RGB_GAMMA_CORRECT  : processNormalKeyCase_GammaCorrect(key,&(global_frameFilterParam.gammaCorrectParameters));break;
+        case ALGO_ID_RGB_GAUSSIAN_SMOOTH: processNormalKeyCase_GaussSmooth(key,&(global_frameFilterParam.gaussianSmoothParameters));break;
+        default:                          break;
     }
     
 }
