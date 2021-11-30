@@ -75,11 +75,11 @@ void menu_log()
     LOG_MENU(" *************************************%s","*************************************");
     LOG_MENU(" *************************************%s","*************************************");
     LOG_MENU(" %s   NativeDIP KeyBoard Control:     %s","******************","****************");
-    LOG_MENU(" F1:    Original Frame                %s","                                     ");
-    LOG_MENU(" F2:    [ISP]Gamma Correction         %s","                                     ");
+    LOG_MENU("  1:    Original Frame                %s","                                     ");
+    LOG_MENU("  2:    [ISP]Gamma Correction         %s","                                     ");
     LOG_MENU("        a|A: add gamma_level_inv      %s","                                     ");
     LOG_MENU("        s|S: sub gamma_level_inv      %s","                                     ");
-    LOG_MENU(" F3:    [ISP]Gaussian Smooth          %s","                                     ");
+    LOG_MENU("  3:    [ISP]Gaussian Smooth          %s","                                     ");
     LOG_MENU("        a|A: add kernel level step2   %s","                                     ");
     LOG_MENU("        s|S: sub kernel level step2   %s","                                     ");
     LOG_MENU("        q|Q: add gauss  sigma step.1  %s","                                     ");
@@ -229,6 +229,13 @@ void processSpecialKeys(int key, int x, int y)
 }
 void processNormalKeys(unsigned char key,int x,int y)
 {
+    switch(key) 
+    {
+        case '1' :global_pipeline_ctl.step2_id=0                          ; break;
+        case '2' :global_pipeline_ctl.step2_id=ALGO_ID_RGB_GAMMA_CORRECT  ; break;
+        case '3' :global_pipeline_ctl.step2_id=ALGO_ID_RGB_GAUSSIAN_SMOOTH; break;
+        default:                                                                    break;
+    }
     switch(global_pipeline_ctl.step2_id)
     {
         case ALGO_ID_RGB_GAMMA_CORRECT  : processNormalKeyCase_GammaCorrect(key,&(global_frameFilterParam.gammaCorrectParameters));break;
