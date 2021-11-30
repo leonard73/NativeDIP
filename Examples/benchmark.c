@@ -24,6 +24,7 @@ void frame_pipline_step1_run_bgr2rgb(frameRawData * frame_in,glShowDataRGB * fra
 void frame_pipline_step1_run_bgr_rgb_gray(frameRawData * frame_in,glShowDataRGB * frame_out);
 void frame_pipline_step1_run_yuyv2rgb(frameRawData * frame_in,glShowDataRGB * frame_out);
 void frame_pipline_step1_run_yuyv_rgb_gray(frameRawData * frame_in,glShowDataRGB * frame_out);
+void frame_pipline_step1_run_y8_rgb_gray(frameRawData * frame_in,glShowDataRGB * frame_out);
 void frame_pipline_step2_run_gamma_correct(frameRawData * frame_in,glShowDataRGB * frame_out);
 void frame_pipline_step2_run_gaussian_smooth(frameRawData * frame_in,glShowDataRGB * frame_out);
 void frame_piplineFunc(frameRawData * frame_in,glShowDataRGB * frame_out)
@@ -40,6 +41,7 @@ void frame_piplineFunc(frameRawData * frame_in,glShowDataRGB * frame_out)
         case  ALGO_ID_BMP_RGB_RGB2GRAY   :frame_pipline_step1_run_bgr_rgb_gray(frame_in,frame_out);  break;
         case  ALGO_ID_UVC_YUYV2RGB       :frame_pipline_step1_run_yuyv2rgb(frame_in,frame_out);      break;
         case  ALGO_ID_UVC_YUYV2RGBGRAY   :frame_pipline_step1_run_yuyv_rgb_gray(frame_in,frame_out); break;
+        case  ALGO_ID_UVC_Y82RGBGRAY     :frame_pipline_step1_run_y8_rgb_gray(frame_in,frame_out); break;
         default                          :                                                           break;
     }
     gettimeofday(&tpend,NULL); 
@@ -65,6 +67,7 @@ int  main(int argc, char *argv[])
         case 1  : algo_id=ALGO_ID_BMP_RGB_RGB2GRAY;      break;
         case 2  : algo_id=ALGO_ID_UVC_YUYV2RGB;          break;
         case 3  : algo_id=ALGO_ID_UVC_YUYV2RGBGRAY;      break;
+        case 7  : algo_id=ALGO_ID_UVC_Y82RGBGRAY;        break;
         default :                                        break;
     }
     switch(atoi(argv[1]))
@@ -121,6 +124,14 @@ void frame_pipline_step1_run_yuyv_rgb_gray(frameRawData * frame_in,glShowDataRGB
     loadStreamYUYV2RGBA_GRAY((uint8_t*)frame_out->rgb_data_p,frame_in->frameRawPtr,frame_in->frameWidth,frame_in->frameHeight); 
     LOG_D("Run loadStreamYUYV2RGBA_GRAY OK %s", " ");
 }
+void frame_pipline_step1_run_y8_rgb_gray(frameRawData * frame_in,glShowDataRGB * frame_out)
+{
+    frame_out->pixelWidth  = frame_in->frameWidth;
+    frame_out->pixelHeight = frame_in->frameHeight;
+    frame_out->dataSize    = frame_out->pixelWidth*frame_out->pixelHeight*3;
+    loadStreamY82RGBA((uint8_t*)frame_out->rgb_data_p,frame_in->frameRawPtr,frame_in->frameWidth,frame_in->frameHeight); 
+    LOG_D("Run loadStreamYUYV2RGBA_GRAY OK %s", " ");    
+}
 void frame_pipline_step2_run_gamma_correct(frameRawData * frame_in,glShowDataRGB * frame_out)
 {
     uint8_t table_gamma[256];
@@ -144,11 +155,10 @@ void frame_pipline_step2_run_gaussian_smooth(frameRawData * frame_in,glShowDataR
     generate_gaussian_kernel_2d(gaussian_kernel_tbl,kernel_size,sigma);
     gaussian_smooth_2d(src,dst,width,height,3,gaussian_kernel_tbl,kernel_size,paddingMode);
     if(!gaussian_kernel_tbl) {free(gaussian_kernel_tbl);}
-    frame_out->rgb_data_p =&OUTPUT_MEM2[0];
 }
 void uvc_frame_display(int argc, char *argv[])
 {
-    start_gl_show_frame(argc,argv,640,480,&frame_piplineFunc);
+    start_gl_show_frame(argc,argv,640,800,&frame_piplineFunc,"/dev/video2");
 }
 void bmp_frame_display(int argc, char *argv[])
 {

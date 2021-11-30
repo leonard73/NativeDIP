@@ -39,16 +39,21 @@ cc_flag_all:=${cc_flag_lib} ${cc_flag_include} ${cc_flag_def} ${cc_flag_isa}
 #outExecutable
 exefile:=build/DipBenchmark
 build_prepare:
-		mkdir -p build
+		mkdir -p ./build
 build_nativeC:
+		make build_prepare
 		$(cc) -o $(exefile) $(ex_benchmark_src_all) $(cc_flag_all)
 build_armNeon:
+		make build_prepare
 		$(cc) -o $(exefile) $(ex_benchmark_src_all) $(cc_flag_all) ${cc_flag_isa_neon}
 build_avx128:
+		make build_prepare
 		$(cc) -o $(exefile) $(ex_benchmark_src_all) $(cc_flag_all) ${cc_flag_isa_avx}
 build_avx256:
+		make build_prepare
 		$(cc) -o $(exefile) $(ex_benchmark_src_all) $(cc_flag_all) ${cc_flag_isa_avx2}
 build_avx512:
+		make build_prepare
 		$(cc) -o $(exefile) $(ex_benchmark_src_all) $(cc_flag_all) ${cc_flag_isa_avx512}
 run_bmp_display:
 		./$(exefile) ${exe_parameters} 1 0 4

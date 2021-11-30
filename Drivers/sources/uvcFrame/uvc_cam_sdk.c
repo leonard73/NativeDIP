@@ -221,9 +221,9 @@ int uvc_camera_sdk_init(const char * device_path,uint32_t pixel_width,uint32_t p
 	}
 	switch(format)
 	{
-		// case uvc_camera_sdk_stream_yuyv:camera_init(p_camera_global,V4L2_PIX_FMT_YUYV);break;
+		case 0:camera_init(p_camera_global,V4L2_PIX_FMT_YUYV);break;
 		// case uvc_camera_sdk_stream_mpeg:camera_init(p_camera_global,V4L2_PIX_FMT_MPEG);break;
-		// case uvc_camera_sdk_stream_y8:camera_init(p_camera_global,V4L2_PIX_FMT_GREY);break;
+		case 1:camera_init(p_camera_global,V4L2_PIX_FMT_YUYV);break;
 		default:camera_init(p_camera_global,V4L2_PIX_FMT_YUYV);break;
 	}
 	LOG_UVC("uvc_camera_sdk_init successfully!\n%s","");

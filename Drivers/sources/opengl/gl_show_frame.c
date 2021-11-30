@@ -236,12 +236,12 @@ void processNormalKeys(unsigned char key,int x,int y)
     
 }
 
-int start_gl_show_frame(int argc, char *argv[],uint32_t pixelW,uint32_t pixelH,framePipLineFunc  piplineFuncP)
+int start_gl_show_frame(int argc, char *argv[],uint32_t pixelW,uint32_t pixelH,framePipLineFunc  piplineFuncP,char device_path[20])
 {
     global_framePipLineFuncPtr = piplineFuncP;
     glFrameWidthSet = pixelW;
     glFrameHeightSet = pixelH;
-    int ret=uvc_camera_sdk_init("/dev/video0",glFrameWidthSet,glFrameHeightSet,0);
+    int ret=uvc_camera_sdk_init(device_path,glFrameWidthSet,glFrameHeightSet,1);
 	uvc_camera_sdk_stream_start(1000212);
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);

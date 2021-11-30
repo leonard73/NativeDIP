@@ -11,6 +11,6 @@
 #else
 #define LOG_MENU(X,...) printf("[Menu]: " #X " \n",__VA_ARGS__)
 #endif
-int start_gl_show_frame(int argc, char *argv[],uint32_t pixelW,uint32_t pixelH,framePipLineFunc  piplineFuncP);
+int start_gl_show_frame(int argc, char *argv[],uint32_t pixelW,uint32_t pixelH,framePipLineFunc  piplineFuncP,char device_path[20]);
 int start_gl_show_bmp(int argc, char *argv[], char * load_bmp_path,uint32_t pixelW,uint32_t pixelH,framePipLineFunc  piplineFuncP);
 #endif //__GL_SHOW_FRAME_H__

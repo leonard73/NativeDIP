@@ -5,6 +5,7 @@
 #define ALGO_ID_BMP_BGR2RGB                     (0x00000000)
 #define ALGO_ID_BMP_RGB_RGB2GRAY                (0x00000001)
 #define ALGO_ID_UVC_YUYV2RGB                    (0x00000002)
+#define ALGO_ID_UVC_Y82RGBGRAY                  (0x00000007)
 #define ALGO_ID_UVC_YUYV2RGBGRAY                (0x00000003)
 #define ALGO_ID_RGB_GAMMA_CORRECT               (0x00000004)
 #define ALGO_ID_RGB_GAUSSIAN_SMOOTH             (0x00000005)

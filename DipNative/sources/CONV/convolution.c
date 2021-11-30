@@ -100,7 +100,6 @@ void convolution_2d_u8_kfloat_zeroPadding(uint8_t * src,uint8_t *dst,uint32_t pi
                 }
             }
             dst[center_index] = (uint8_t) ( sum / sum_k + 0.5f ) ;
-            printf("dst[%d]=%d\n",center_index,dst[center_index]);
         }
     }
 }
