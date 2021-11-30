@@ -116,7 +116,8 @@ void display(void)
     }
     update_zoom_ratio();
     glPixelZoom(zoom_w_ratio,zoom_h_ratio);
-    glFlush();
+    // glFlush();//GLUT_SINGLE
+    glutSwapBuffers();
 #ifdef DEBUG_LATENCY_ENABLE
     gettimeofday(&tpend,NULL); 
     timeuse_us=1000000*(tpend.tv_sec-tpstart.tv_sec) + tpend.tv_usec-tpstart.tv_usec; 
@@ -156,7 +157,8 @@ void display_bmp(void)
     }
     update_zoom_ratio();
     glPixelZoom(zoom_w_ratio,zoom_h_ratio);
-    glFlush();
+    // glFlush();//GLUT_SINGLE
+    glutSwapBuffers();
 #ifdef DEBUG_LATENCY_ENABLE
     gettimeofday(&tpend,NULL); 
     timeuse_us=1000000*(tpend.tv_sec-tpstart.tv_sec) + tpend.tv_usec-tpstart.tv_usec; 
@@ -244,9 +246,9 @@ int start_gl_show_frame(int argc, char *argv[],uint32_t pixelW,uint32_t pixelH,f
     int ret=uvc_camera_sdk_init(device_path,glFrameWidthSet,glFrameHeightSet,1);
 	uvc_camera_sdk_stream_start(1000212);
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
+    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
     glutInitWindowPosition(50, 50);
-    glutInitWindowSize(glFrameWidthSet/4, glFrameHeightSet/4);
+    glutInitWindowSize(glFrameWidthSet/2, glFrameHeightSet/2);
     glutCreateWindow("OpenGL UVC SHOW");
     init();
     glutDisplayFunc(display);
@@ -271,7 +273,7 @@ int start_gl_show_bmp(int argc, char *argv[], char * load_bmp_path,uint32_t pixe
     glFrameHeightSet = bmp_d.bmp_header_struct.bmp_info_struct.bmpInfo_height;
     glFramePixelCount = glFrameWidthSet * glFrameHeightSet;
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
+    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
     glutInitWindowPosition(50, 50);
     glutInitWindowSize(glFrameWidthSet, glFrameHeightSet);
     glutCreateWindow("OpenGL BMP SHOW");
