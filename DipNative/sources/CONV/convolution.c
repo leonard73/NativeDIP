@@ -121,3 +121,65 @@ void convolution_2d_u8_kfloat(uint8_t * src,uint8_t *dst,uint32_t pixel_w,uint32
         default: break;
     }
 }
+void convolution_2d_u8_u32_imm_zeroPadding(uint8_t * src,uint8_t *dst,uint32_t pixel_w,uint32_t pixel_h,uint32_t channel,uint32_t kernel2D[],uint32_t kernel_size,uint8_t imm_shr_bits)
+{
+    uint32_t k_h = kernel_size /2 ;
+    uint32_t pixel_total_width = channel  * pixel_w;
+    for(uint32_t id_row  = 0 ; id_row < pixel_h; ++id_row)
+    {
+        for(uint32_t id_col = 0; id_col < pixel_total_width; ++id_col)
+        {
+            uint32_t center_index = id_row * pixel_total_width + id_col;
+            uint32_t sum = 0, sum_k  = 0;
+            uint32_t kernel_id=0;
+            for(uint32_t h = id_row - k_h ; h <=id_row + k_h; ++ h)
+            {
+                for(uint32_t w = id_col - k_h ; w<=id_col+k_h;  w+=3)
+                {
+                    uint32_t sub_index = h * pixel_total_width + w;
+                    bool  isValInRange = ((h>=0) && (h<pixel_h)) && ((w>=0) && (w<pixel_total_width));
+                    uint32_t val = (isValInRange) ? ((float)src[sub_index]) : (0) ;
+                    sum   += val;
+                    sum_k += (isValInRange) ? kernel2D[kernel_id] : 0;
+                    kernel_id++;
+                }
+            }
+            dst[center_index] = (uint8_t) ( sum >> (imm_shr_bits & 0x1f) ) ;
+        }
+    }
+}
+void convolution_2d_u8_u16_imm_zeroPadding(uint8_t * src,uint8_t *dst,uint32_t pixel_w,uint32_t pixel_h,uint32_t channel,uint16_t kernel2D[],uint32_t kernel_size,uint8_t imm_shr_bits)
+{
+    uint32_t k_h = kernel_size /2 ;
+    uint32_t pixel_total_width = channel  * pixel_w;
+    for(uint32_t id_row  = 0 ; id_row < pixel_h; ++id_row)
+    {
+        for(uint32_t id_col = 0; id_col < pixel_total_width; ++id_col)
+        {
+            uint32_t center_index = id_row * pixel_total_width + id_col;
+            uint16_t sum = 0, sum_k  = 0;
+            uint32_t kernel_id=0;
+            for(uint32_t h = id_row - k_h ; h <=id_row + k_h; ++ h)
+            {
+                for(uint32_t w = id_col - k_h ; w<=id_col+k_h;  w+=3)
+                {
+                    uint32_t sub_index = h * pixel_total_width + w;
+                    bool  isValInRange = ((h>=0) && (h<pixel_h)) && ((w>=0) && (w<pixel_total_width));
+                    uint16_t val = (isValInRange) ? ((float)src[sub_index]) : (0) ;
+                    sum   += val;
+                    sum_k += (isValInRange) ? kernel2D[kernel_id] : 0;
+                    kernel_id++;
+                }
+            }
+            dst[center_index] = (uint8_t) ( sum >> (imm_shr_bits & 0x0f) ) ;
+        }
+    }
+}
+void convolution_2d_u8_u32_imm(uint8_t * src,uint8_t *dst,uint32_t pixel_w,uint32_t pixel_h,uint32_t channel,uint32_t kernel2D[],uint32_t kernel_size,uint32_t padding_mode,uint8_t  immediate_shr_bits)
+{
+    convolution_2d_u8_u32_imm_zeroPadding( src,dst, pixel_w, pixel_h, channel, kernel2D, kernel_size, immediate_shr_bits);
+}
+void convolution_2d_u8_u16_imm(uint8_t * src,uint8_t *dst,uint32_t pixel_w,uint32_t pixel_h,uint32_t channel,uint16_t kernel2D[],uint32_t kernel_size,uint32_t padding_mode,uint8_t  immediate_shr_bits)
+{
+    convolution_2d_u8_u16_imm_zeroPadding( src,dst, pixel_w, pixel_h, channel, kernel2D, kernel_size, immediate_shr_bits);
+}

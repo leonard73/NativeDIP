@@ -22,7 +22,7 @@ GLint record_height;
 void init_filter_parameters()
 {
     global_frameFilterParam.gammaCorrectParameters.GammaCorrect_power_level_inv = 2.2;
-    global_frameFilterParam.gaussianSmoothParameters.GaussianSmooth_Padding_Mode=CONVOLUTION_PADDING_MODE_REPLICATE;
+    global_frameFilterParam.gaussianSmoothParameters.GaussianSmooth_Padding_Mode=CONVOLUTION_PADDING_MODE_ZERO;
     global_frameFilterParam.gaussianSmoothParameters.GaussianSmooth_Sigma=1.3;
     global_frameFilterParam.gaussianSmoothParameters.GaussianSmooth_Kernel=5;
 }

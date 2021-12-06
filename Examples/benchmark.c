@@ -150,15 +150,23 @@ void frame_pipline_step2_run_gaussian_smooth(frameRawData * frame_in,glShowDataR
     uint32_t height      = frame_in->frameHeight;
     uint8_t  *src        = frame_out->rgb_data_p;
     uint8_t  *dst        = &OUTPUT_MEM2[0];
+    #if 0
     float *gaussian_kernel_tbl = 0;
     gaussian_kernel_tbl=(float*)  malloc (kernel_size*kernel_size*sizeof(float));  
     generate_gaussian_kernel_2d(gaussian_kernel_tbl,kernel_size,sigma);
-    gaussian_smooth_2d(src,dst,width,height,3,gaussian_kernel_tbl,kernel_size,paddingMode);
+    gaussian_smooth_2d(src,dst,width,height,3,gaussian_kernel_tbl,kernel_size,paddingMode,0);
     if(!gaussian_kernel_tbl) {free(gaussian_kernel_tbl);}
+    #else
+    uint32_t *gaussian_kernel_tbl = 0;
+    gaussian_kernel_tbl = (uint32_t*) malloc(kernel_size*kernel_size*sizeof(uint32_t)); 
+    generate_gaussian_kernel_2d_fixU16(gaussian_kernel_tbl,8,kernel_size,sigma);   
+    gaussian_smooth_2d(src,dst,width,height,3,gaussian_kernel_tbl,kernel_size,paddingMode,8);
+    if(!gaussian_kernel_tbl) {free(gaussian_kernel_tbl);}   
+    #endif
 }
 void uvc_frame_display(int argc, char *argv[])
 {
-    start_gl_show_frame(argc,argv,640,800,&frame_piplineFunc,"/dev/video2");
+    start_gl_show_frame(argc,argv,640,480,&frame_piplineFunc,"/dev/video0");
 }
 void bmp_frame_display(int argc, char *argv[])
 {
