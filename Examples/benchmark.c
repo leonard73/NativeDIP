@@ -157,8 +157,8 @@ void frame_pipline_step2_run_gaussian_smooth(frameRawData * frame_in,glShowDataR
     gaussian_smooth_2d(src,dst,width,height,3,gaussian_kernel_tbl,kernel_size,paddingMode,0);
     if(!gaussian_kernel_tbl) {free(gaussian_kernel_tbl);}
     #else
-    uint32_t *gaussian_kernel_tbl = 0;
-    gaussian_kernel_tbl = (uint32_t*) malloc(kernel_size*kernel_size*sizeof(uint32_t)); 
+    uint16_t *gaussian_kernel_tbl = 0;
+    gaussian_kernel_tbl = (uint16_t*) malloc(kernel_size*kernel_size*sizeof(uint32_t)); 
     generate_gaussian_kernel_2d_fixU16(gaussian_kernel_tbl,8,kernel_size,sigma);   
     gaussian_smooth_2d(src,dst,width,height,3,gaussian_kernel_tbl,kernel_size,paddingMode,8);
     if(!gaussian_kernel_tbl) {free(gaussian_kernel_tbl);}   
