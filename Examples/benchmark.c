@@ -27,6 +27,7 @@ void frame_pipline_step1_run_yuyv_rgb_gray(frameRawData * frame_in,glShowDataRGB
 void frame_pipline_step1_run_y8_rgb_gray(frameRawData * frame_in,glShowDataRGB * frame_out);
 void frame_pipline_step2_run_gamma_correct(frameRawData * frame_in,glShowDataRGB * frame_out);
 void frame_pipline_step2_run_gaussian_smooth(frameRawData * frame_in,glShowDataRGB * frame_out);
+void frame_pipline_step3_run_fast9_corner_detector(frameRawData * frame_in,glShowDataRGB * frame_out);
 void frame_piplineFunc(frameRawData * frame_in,glShowDataRGB * frame_out)
 {
     struct timeval tpstart,tpend;
@@ -53,6 +54,12 @@ void frame_piplineFunc(frameRawData * frame_in,glShowDataRGB * frame_out)
         case ALGO_ID_RGB_GAMMA_CORRECT   :frame_pipline_step2_run_gamma_correct(frame_in,frame_out)  ; break;
         case ALGO_ID_RGB_GAUSSIAN_SMOOTH :frame_pipline_step2_run_gaussian_smooth(frame_in,frame_out); break;
         default                          :                                                             break;
+    }
+    frame_in->piplineCtl.step3_id = ALGO_ID_RGB_FAST9_CORNER_DETECT;
+    switch(frame_in->piplineCtl.step3_id)
+    {
+        case ALGO_ID_RGB_FAST9_CORNER_DETECT    :frame_pipline_step3_run_fast9_corner_detector(frame_in,frame_out)  ;   break;
+        default                                 :                                                                       break;
     }
     gettimeofday(&tpend,NULL); 
     timeuse_us=1000000*(tpend.tv_sec-tpstart.tv_sec) + tpend.tv_usec-tpstart.tv_usec; 
@@ -164,9 +171,83 @@ void frame_pipline_step2_run_gaussian_smooth(frameRawData * frame_in,glShowDataR
     if(!gaussian_kernel_tbl) {free(gaussian_kernel_tbl);}   
     #endif
 }
+void frame_pipline_step3_run_fast9_corner_detector(frameRawData * frame_in,glShowDataRGB * frame_out)
+{
+    uint32_t static threshould=100;
+    uint32_t width       = frame_in->frameWidth;
+    uint32_t height      = frame_in->frameHeight;
+    uint8_t  *src        = frame_out->rgb_data_p;
+    uint8_t  *dst        = frame_out->rgb_data_p;
+    uint32_t  width_rgb = width*3;
+    uint32_t  coord_count=0;
+    // memcpy(dst,src,height*width*3);
+    for(uint32_t i=7;i<height-7;i++)
+    {
+        for(uint32_t j=7;j<width-7;j++)
+        {
+            uint32_t index_center  = i*width*3+j*3;
+            uint32_t index_left    = index_center-3*1;
+            uint32_t index_right   = index_center+3*1;
+            uint32_t index_up      = index_center-1*width*3;
+            uint32_t index_down    = index_center+1*width*3;
+            int16_t  pixel_left    = (int16_t)src[index_left]+(int16_t)src[index_left+1]+(int16_t)src[index_left+2];
+            int16_t  pixel_right   = (int16_t)src[index_right]+(int16_t)src[index_right+1]+(int16_t)src[index_right+2];
+            int16_t  pixel_up      = (int16_t)src[index_up]+(int16_t)src[index_up+1]+(int16_t)src[index_up+2];
+            int16_t  pixel_down    = (int16_t)src[index_down]+(int16_t)src[index_down+1]+(int16_t)src[index_down+2];
+            int16_t  pixel_center  = (int16_t)src[index_center]+(int16_t)src[index_center+1]+(int16_t)src[index_center+2];
+            int16_t  Ix            = (pixel_right - pixel_left)/3;
+            int16_t  Iy            = (pixel_up - pixel_down)/3;
+            int32_t  Ix2           = Ix*Ix;
+            int32_t  Iy2           = Iy*Iy;
+            int32_t  Ixy           = Ix*Iy;
+            int32_t  DET           = Ix2 * Iy2 - Ixy * Ixy;
+            int32_t  TRACE         = Ix2 + Iy2;
+            int32_t  RESPONSE      = ((DET<<7)  -  (7 * TRACE*TRACE))>>7;
+            if(RESPONSE >(256*256*256*100*threshould))
+            {
+                coord_count++;
+                dst[index_center] = 220;            dst[index_center+1] = 0;            dst[index_center+2] = 0;
+                dst[index_center+9-width_rgb*1] = 220;  dst[index_center+9-width_rgb*1+1] = 0;  dst[index_center+9-width_rgb*1+2] = 0;
+                dst[index_center+9] = 220;          dst[index_center+9+1] = 0;          dst[index_center+9+2] = 0;
+                dst[index_center+9+width_rgb*1] = 220;  dst[index_center+9+width_rgb*1+1] = 0;  dst[index_center+9+width_rgb*1+2] = 0;
+                dst[index_center+6-width_rgb*2] = 220;  dst[index_center+6-width_rgb*2+1] = 0;  dst[index_center+6-width_rgb*2+2] = 0;
+                dst[index_center+6+width_rgb*2] = 220;  dst[index_center+6+width_rgb*2+1] = 0;  dst[index_center+6+width_rgb*2+2] = 0;
+                dst[index_center+3-width_rgb*3] = 220;  dst[index_center+3-width_rgb*3+1] = 0;  dst[index_center+3-width_rgb*3+2] = 0;
+                dst[index_center+3+width_rgb*3] = 220;  dst[index_center+3+width_rgb*3+1] = 0;  dst[index_center+3+width_rgb*3+2] = 0;
+                dst[index_center-3-width_rgb*3] = 220;  dst[index_center-3-width_rgb*3+1] = 0;  dst[index_center-3-width_rgb*3+2] = 0;
+                dst[index_center-3+width_rgb*3] = 220;  dst[index_center-3+width_rgb*3+1] = 0;  dst[index_center-3+width_rgb*3+2] = 0;
+                dst[index_center-9-width_rgb*1] = 220;  dst[index_center-9-width_rgb*1+1] = 0;  dst[index_center-9-width_rgb*1+2] = 0;
+                dst[index_center-9] = 220;          dst[index_center-9+1] = 0;          dst[index_center-9+2] = 0;
+                dst[index_center-9+width_rgb*1] = 220;  dst[index_center-9+width_rgb*1+1] = 0;  dst[index_center-9+width_rgb*1+2] = 0;
+                dst[index_center-6-width_rgb*2] = 220;  dst[index_center-6-width_rgb*2+1] = 0;  dst[index_center-6-width_rgb*2+2] = 0;
+                dst[index_center-6+width_rgb*2] = 220;  dst[index_center-6+width_rgb*2+1] = 0;  dst[index_center-6+width_rgb*2+2] = 0;
+                dst[index_center+width_rgb*3] = 220;  dst[index_center+width_rgb*3+1] = 0;  dst[index_center+width_rgb*3+2] = 0;
+                dst[index_center-width_rgb*3] = 220;  dst[index_center-width_rgb*3+1] = 0;  dst[index_center-width_rgb*3+2] = 0;
+            }
+
+        }
+    }
+    if(coord_count > 1000 ) 
+    {
+        threshould ++;
+    }
+    if(coord_count < 50 ) 
+    {
+        threshould --;
+    }
+    if(threshould > 127 )
+    {
+        threshould =  127;
+    }
+    if(threshould <  10)
+    {
+        threshould =  10;
+    }
+    printf("threshould =  %d;  coord_count=%d \n",threshould,coord_count);
+}
 void uvc_frame_display(int argc, char *argv[])
 {
-    start_gl_show_frame(argc,argv,640,480,&frame_piplineFunc,"/dev/video0");
+    start_gl_show_frame(argc,argv,1280,480,&frame_piplineFunc,"/dev/video0");
 }
 void bmp_frame_display(int argc, char *argv[])
 {

@@ -59,7 +59,7 @@ void loadStreamY82RGBA(uint8_t * rgb,uint8_t* yuyv, uint32_t width, uint32_t hei
 	int i = 0, j = 0;
 	int32_t y = 0;
 	int index = 0;
-          for (i = 0; i < height; ++i)
+    for (i = 0; i < height; ++i)
 	{
 		for (j = 0; j < width; j +=1)
 		{
