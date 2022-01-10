@@ -2,6 +2,7 @@
 libNativeDIP_PATH:=DipNative
 libDrivers_PATH:=Drivers
 example_PATH:=Examples
+lib3rd_PATH:=lib3rdParty
 cc:=gcc
 #examples sources#
 ex_benchmark_src:=${example_PATH}/benchmark.c
@@ -12,15 +13,19 @@ driver_src:=${libDrivers_PATH}/sources/opengl/*.c \
 #dip native sources#
 dipNative_src:=${libNativeDIP_PATH}/sources/ISP/*.c
 dipNative_src+=${libNativeDIP_PATH}/sources/CONV/*.c
+#3rd  party source
+lib3rd_src:=${lib3rd_PATH}/*.a
 #total sources#
 ex_benchmark_src_all:=${ex_benchmark_src} \
 					  ${driver_src} \
-					  ${dipNative_src}	
+					  ${dipNative_src}\
+					  ${lib3rd_src}
 #incldue compile flag
 cc_flag_include:=-I${libNativeDIP_PATH}/include \
-				 -I${libDrivers_PATH}/include
+				 -I${libDrivers_PATH}/include \
+				 -I${lib3rd_PATH}/include
 #libraries compile flag
-cc_flag_lib:=-lGL -lGLU -lglut -lm
+cc_flag_lib:=-lGL -lGLU -lglut -lm  -lpthread 
 #definiations compile flag
 cc_flag_def+=-DDEBUG_LATENCY_ENABLE
 cc_flag_def+=-D__DISABLE_LOG_DEBUG__ 
@@ -58,7 +63,7 @@ build_avx512:
 run_bmp_display:
 		./$(exefile) ${exe_parameters} 1 0 4
 run_uvc_display:
-		./$(exefile) ${exe_parameters} 2 2 4
+		./$(exefile) ${exe_parameters} 2 3 4
 clean:
 		rm -rf $(exefile)
 all:

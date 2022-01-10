@@ -1,6 +1,21 @@
 #include <driverInc.h>
 #include <dipNativeInc.h>
 #include <sys/time.h>
+#include "apriltag.h"
+#include "tag36h11.h"
+#include "tag25h9.h"
+#include "tag16h5.h"
+#include "tagCircle21h7.h"
+#include "tagCircle49h12.h"
+#include "tagCustom48h12.h"
+#include "tagStandard41h12.h"
+#include "tagStandard52h13.h"
+
+#include "common/getopt.h"
+#include "common/image_u8.h"
+#include "common/image_u8x4.h"
+#include "common/pjpeg.h"
+#include "common/zarray.h"
 #ifndef LOG_D
 #define LOG_D(X,...) printf("[Debug]: " #X " \n",##__VA_ARGS__)
 #endif
@@ -28,6 +43,7 @@ void frame_pipline_step1_run_y8_rgb_gray(frameRawData * frame_in,glShowDataRGB *
 void frame_pipline_step2_run_gamma_correct(frameRawData * frame_in,glShowDataRGB * frame_out);
 void frame_pipline_step2_run_gaussian_smooth(frameRawData * frame_in,glShowDataRGB * frame_out);
 void frame_pipline_step3_run_fast9_corner_detector(frameRawData * frame_in,glShowDataRGB * frame_out);
+void frame_pipline_step3_run_gray_apriltag2(frameRawData * frame_in,glShowDataRGB * frame_out);
 void frame_piplineFunc(frameRawData * frame_in,glShowDataRGB * frame_out)
 {
     struct timeval tpstart,tpend;
@@ -55,10 +71,11 @@ void frame_piplineFunc(frameRawData * frame_in,glShowDataRGB * frame_out)
         case ALGO_ID_RGB_GAUSSIAN_SMOOTH :frame_pipline_step2_run_gaussian_smooth(frame_in,frame_out); break;
         default                          :                                                             break;
     }
-    frame_in->piplineCtl.step3_id = ALGO_ID_RGB_FAST9_CORNER_DETECT;
+    frame_in->piplineCtl.step3_id = ALGO_ID_GRAY_APRITAG2;
     switch(frame_in->piplineCtl.step3_id)
     {
         case ALGO_ID_RGB_FAST9_CORNER_DETECT    :frame_pipline_step3_run_fast9_corner_detector(frame_in,frame_out)  ;   break;
+        case ALGO_ID_GRAY_APRITAG2              :frame_pipline_step3_run_gray_apriltag2(frame_in,frame_out)         ;   break;
         default                                 :                                                                       break;
     }
     gettimeofday(&tpend,NULL); 
@@ -170,6 +187,31 @@ void frame_pipline_step2_run_gaussian_smooth(frameRawData * frame_in,glShowDataR
     gaussian_smooth_2d(src,dst,width,height,3,gaussian_kernel_tbl,kernel_size,paddingMode,8);
     if(!gaussian_kernel_tbl) {free(gaussian_kernel_tbl);}   
     #endif
+}
+void frame_pipline_step3_run_gray_apriltag2(frameRawData * frame_in,glShowDataRGB * frame_out)
+{
+    image_u8_t image_gray;
+    image_gray.width=frame_out->pixelWidth;
+    image_gray.height=frame_out->pixelHeight;
+    image_gray.stride=frame_out->pixelWidth;
+    uint8_t * gray_img = (uint8_t *)malloc(image_gray.width * image_gray.height);
+    for(size_t i=0;i<image_gray.width * image_gray.height;i++)
+    {
+        gray_img[i] = frame_out->rgb_data_p[3*i];
+    }
+    image_gray.buf = gray_img;
+    apriltag_detector_t *td = apriltag_detector_create();
+    apriltag_family_t *tf =tag16h5_create();
+    apriltag_detector_add_family_bits(td, tf, 2);
+    zarray_t *detections = apriltag_detector_detect(td, &image_gray);
+            for (int i = 0; i < zarray_size(detections); i++) {
+                apriltag_detection_t *det;
+                zarray_get(detections, i, &det);
+                printf("detection %3d: id (%2dx%2d)-%-4d, hamming %d, margin %8.3f\n",
+                           i, det->family->nbits, det->family->h, det->id, det->hamming, det->decision_margin);
+
+            }
+    free(gray_img);
 }
 void frame_pipline_step3_run_fast9_corner_detector(frameRawData * frame_in,glShowDataRGB * frame_out)
 {
