@@ -26,4 +26,6 @@ This is an open source project of Digital Image Processing Algorithm with Native
  
  [3.2] sh run_uvc_benchmark.sh  =>   run demos with the uvc camera input (Need Set VideoX number inside the driver) and display with opengl in real time.
 
-
+4. ThirdParty  
+[4.1] Apriltag2
+open source apriltag2 https://github.com/christianrauch/apriltag2.git
