@@ -63,7 +63,7 @@ build_avx512:
 run_bmp_display:
 		./$(exefile) ${exe_parameters} 1 0 4
 run_uvc_display:
-		./$(exefile) ${exe_parameters} 2 3 4
+		./$(exefile) ${exe_parameters} 2 2 4
 clean:
 		rm -rf $(exefile)
 all:

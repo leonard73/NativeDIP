@@ -188,6 +188,110 @@ void frame_pipline_step2_run_gaussian_smooth(frameRawData * frame_in,glShowDataR
     if(!gaussian_kernel_tbl) {free(gaussian_kernel_tbl);}   
     #endif
 }
+void draw_line(  uint32_t stride,uint8_t * rgb_p,double p1_x,double p1_y,double p2_x ,double p2_y,uint32_t max_h,uint8_t channel_id,uint8_t flag_value)
+{
+    #define MAX_POINTS(A,B) (uint32_t)(A>B?A:B)
+    #define MIN_POINTS(A,B) (uint32_t)(A<B?A:B)
+    float  k12_r1024  = fabsf(((float)(p2_x-p1_x)))>1.0  ? (float)((float)(p2_y-p1_y)    / (float)(p2_x-p1_x)) : 0;
+    float  b12_r1024  = ((float)(p2_y ) - k12_r1024 * p2_x);
+    // printf("p2_y=%lf\n",p2_y);
+    // printf("p1_y=%lf\n",p1_y);
+    // printf("p2_x=%lf\n",p2_x);
+    // printf("p1_x=%lf\n",p1_x);
+    // printf("k12_r1024=%f\n",k12_r1024);
+    if(k12_r1024==0)
+    {
+        uint32_t const_x = p1_x;
+        for(uint32_t i = MIN_POINTS(p1_y,p2_y) ; i<  MAX_POINTS(p1_y,p2_y) ; i++)
+        {
+            rgb_p[i*stride+const_x*3+channel_id] = flag_value;
+        }
+    }
+    else
+    {
+        for(uint32_t x = MIN_POINTS(p1_x,p2_x) ; x<  MAX_POINTS(p1_x,p2_x) ; x++)
+        {
+            uint32_t y_liner_interpolated = ((uint32_t)((float)(x) * k12_r1024 + b12_r1024));
+            if(y_liner_interpolated <=0 || y_liner_interpolated>=max_h)
+            {
+                continue;
+            }
+            // printf("y_liner_interpolated=%d\n",y_liner_interpolated);
+            rgb_p[y_liner_interpolated*stride+x*3+channel_id] = flag_value;
+        }       
+    }
+    #undef MAX_POINTS(A,B)
+    #undef MIN_POINTS(A,B)
+} 
+void draw_boudingbox_quadP(glShowDataRGB *  frame_rgb,double points[4][2],uint8_t channel_id,uint8_t flag_value)
+{
+    uint32_t image_width  = frame_rgb->pixelWidth;
+    uint32_t image_height = frame_rgb->pixelHeight;
+    uint32_t stride       = image_width * 3;
+    uint8_t * rgb_p       = frame_rgb->rgb_data_p;
+    double p1_x = (double)(points[0][0]);
+    double p1_y = (double)(points[0][1]);
+    double p2_x = (double)(points[1][0]);
+    double p2_y = (double)(points[1][1]);
+    draw_line(stride,rgb_p,p1_x,p1_y,p2_x ,p2_y,image_height,channel_id,flag_value);
+    p1_x -= 1.0;p2_x-=1.0;
+    draw_line(stride,rgb_p,p1_x,p1_y,p2_x ,p2_y,image_height,channel_id,flag_value);
+    p1_x += 2.0;p2_x+=2.0;
+    draw_line(stride,rgb_p,p1_x,p1_y,p2_x ,p2_y,image_height,channel_id,flag_value);
+    p1_y -= 1.0;p2_y-=1.0;p1_x -= 1.0;p2_x-=1.0;
+    draw_line(stride,rgb_p,p1_x,p1_y,p2_x ,p2_y,image_height,channel_id,flag_value);
+    p1_y += 2.0;p2_y+=2.0;
+    draw_line(stride,rgb_p,p1_x,p1_y,p2_x ,p2_y,image_height,channel_id,flag_value);
+    p1_x = (double)(points[1][0]);
+    p1_y = (double)(points[1][1]);
+    p2_x = (double)(points[2][0]);
+    p2_y = (double)(points[2][1]);
+    draw_line(stride,rgb_p,p1_x,p1_y,p2_x ,p2_y,image_height,channel_id,flag_value);
+    p1_x -= 1.0;p2_x-=1.0;
+    draw_line(stride,rgb_p,p1_x,p1_y,p2_x ,p2_y,image_height,channel_id,flag_value);
+    p1_x += 2.0;p2_x+=2.0;
+    draw_line(stride,rgb_p,p1_x,p1_y,p2_x ,p2_y,image_height,channel_id,flag_value);
+    p1_y -= 1.0;p2_y-=1.0;p1_x -= 1.0;p2_x-=1.0;
+    draw_line(stride,rgb_p,p1_x,p1_y,p2_x ,p2_y,image_height,channel_id,flag_value);
+    p1_y += 2.0;p2_y+=2.0;
+    draw_line(stride,rgb_p,p1_x,p1_y,p2_x ,p2_y,image_height,channel_id,flag_value);
+    p1_x = (double)(points[2][0]);
+    p1_y = (double)(points[2][1]);
+    p2_x = (double)(points[3][0]);
+    p2_y = (double)(points[3][1]);
+    draw_line(stride,rgb_p,p1_x,p1_y,p2_x ,p2_y,image_height,channel_id,flag_value);
+    p1_x -= 1.0;p2_x-=1.0;
+    draw_line(stride,rgb_p,p1_x,p1_y,p2_x ,p2_y,image_height,channel_id,flag_value);
+    p1_x += 2.0;p2_x+=2.0;
+    draw_line(stride,rgb_p,p1_x,p1_y,p2_x ,p2_y,image_height,channel_id,flag_value);
+    p1_y -= 1.0;p2_y-=1.0;p1_x -= 1.0;p2_x-=1.0;
+    draw_line(stride,rgb_p,p1_x,p1_y,p2_x ,p2_y,image_height,channel_id,flag_value);
+    p1_y += 2.0;p2_y+=2.0;
+    draw_line(stride,rgb_p,p1_x,p1_y,p2_x ,p2_y,image_height,channel_id,flag_value);
+    p1_x = (double)(points[3][0]);
+    p1_y = (double)(points[3][1]);
+    p2_x = (double)(points[0][0]);
+    p2_y = (double)(points[0][1]);
+    draw_line(stride,rgb_p,p1_x,p1_y,p2_x ,p2_y,image_height,channel_id,flag_value);
+    p1_x -= 1.0;p2_x-=1.0;
+    draw_line(stride,rgb_p,p1_x,p1_y,p2_x ,p2_y,image_height,channel_id,flag_value);
+    p1_x += 2.0;p2_x+=2.0;
+    draw_line(stride,rgb_p,p1_x,p1_y,p2_x ,p2_y,image_height,channel_id,flag_value);
+    p1_y -= 1.0;p2_y-=1.0;p1_x -= 1.0;p2_x-=1.0;
+    draw_line(stride,rgb_p,p1_x,p1_y,p2_x ,p2_y,image_height,channel_id,flag_value);
+    p1_y += 2.0;p2_y+=2.0;
+    draw_line(stride,rgb_p,p1_x,p1_y,p2_x ,p2_y,image_height,channel_id,flag_value);
+}
+double dia_quads(double p[4][2])
+{
+    #define DIA_MIN__(A,B) A<B ? A:B;
+    double l1_x = p[0][0]-p[2][0];
+    double l1_y = p[0][1]-p[2][1];
+    double l2_x = p[1][0]-p[3][0];
+    double l2_y = p[1][1]-p[3][1];
+    return DIA_MIN__((l1_x*l1_x + l1_y*l1_y),(l2_x*l2_x + l2_y*l2_y));
+    #undef DIA_MIN__(A,B)
+}
 void frame_pipline_step3_run_gray_apriltag2(frameRawData * frame_in,glShowDataRGB * frame_out)
 {
     image_u8_t image_gray;
@@ -202,13 +306,26 @@ void frame_pipline_step3_run_gray_apriltag2(frameRawData * frame_in,glShowDataRG
     image_gray.buf = gray_img;
     apriltag_detector_t *td = apriltag_detector_create();
     apriltag_family_t *tf =tag16h5_create();
-    apriltag_detector_add_family_bits(td, tf, 2);
+    apriltag_detector_add_family_bits(td, tf, 0);
     zarray_t *detections = apriltag_detector_detect(td, &image_gray);
+    printf("zarray_size(detections)=%d\n",zarray_size(detections));
+    
             for (int i = 0; i < zarray_size(detections); i++) {
                 apriltag_detection_t *det;
                 zarray_get(detections, i, &det);
-                printf("detection %3d: id (%2dx%2d)-%-4d, hamming %d, margin %8.3f\n",
-                           i, det->family->nbits, det->family->h, det->id, det->hamming, det->decision_margin);
+                if(dia_quads(det->p) > 90)
+                {
+                printf("p0[%lf,%lf]\n",det->p[0][0],det->p[0][1]);
+                printf("p1[%lf,%lf]\n",det->p[1][0],det->p[1][1]);
+                printf("p2[%lf,%lf]\n",det->p[2][0],det->p[2][1]);
+                printf("p3[%lf,%lf]\n",det->p[3][0],det->p[3][1]);
+                printf("c[%lf,%lf]\n",det->c[0],det->c[1]);
+                // printf("detection %3d: id (%2dx%2d)-%-4d, hamming %d, margin %8.3f\n",
+                //            i, det->family->nbits, det->family->h, det->id, det->hamming, det->decision_margin);
+                draw_boudingbox_quadP(frame_out,det->p,0,0);
+                draw_boudingbox_quadP(frame_out,det->p,1,0);
+                draw_boudingbox_quadP(frame_out,det->p,2,255);
+                }
 
             }
     free(gray_img);
@@ -289,7 +406,7 @@ void frame_pipline_step3_run_fast9_corner_detector(frameRawData * frame_in,glSho
 }
 void uvc_frame_display(int argc, char *argv[])
 {
-    start_gl_show_frame(argc,argv,1280,480,&frame_piplineFunc,"/dev/video0");
+    start_gl_show_frame(argc,argv,2560,960,&frame_piplineFunc,"/dev/video0");
 }
 void bmp_frame_display(int argc, char *argv[])
 {
